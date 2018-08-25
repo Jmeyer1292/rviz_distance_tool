@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>rviz_distance_tool</name>
+  <version>0.1.0</version>
+  <description>The rviz_distance_tool package</description>
+
+  <maintainer email="jmeyer1292@gmail.com">Jon Meyer</maintainer>
+
+  <license>Apache 2.0</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>rviz</depend>
+  <build_depend>qtbase5-dev</build_depend>
+  <exec_depend>libqt5-core</exec_depend>
+  <exec_depend>libqt5-gui</exec_depend>
+  <exec_depend>libqt5-widgets</exec_depend>
+
+  <export>
+     <rviz plugin="${prefix}/plugin_description.xml"/>
+  </export>
+</package>
