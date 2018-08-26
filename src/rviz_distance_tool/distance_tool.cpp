@@ -36,6 +36,8 @@ void rviz_distance_tool::DistanceTool::onInitialize()
 
   std_cursor_ = rviz::getDefaultCursor();
   hit_cursor_ = rviz::makeIconCursor("package://rviz/icons/crosshair.svg");
+
+  shortcut_key_ = 'd';
 }
 
 void rviz_distance_tool::DistanceTool::activate()
