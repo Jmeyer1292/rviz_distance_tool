@@ -29,12 +29,13 @@ public:
 
 private:
 
-  void setLinesAndStatus(const Ogre::Vector3& start, const Ogre::Vector3& end);
+  void configureLines(const Ogre::Vector3& start, const Ogre::Vector3& end);
+  void configureStatus(const Ogre::Vector3& start, const Ogre::Vector3& end);
   void hideLines();
 
   // state machine
   enum class SelectionState {
-    START, END
+    Idle, Tracking, Finished
   } state_;
 
   std::array<rviz::Line*, 4> lines_;

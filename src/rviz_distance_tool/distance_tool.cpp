@@ -15,7 +15,7 @@
 
 
 rviz_distance_tool::DistanceTool::DistanceTool()
-  : state_(SelectionState::START)
+  : state_(SelectionState::Idle)
   , lines_{{nullptr, nullptr, nullptr, nullptr}}
 {}
 
@@ -39,60 +39,68 @@ void rviz_distance_tool::DistanceTool::onInitialize()
 }
 
 void rviz_distance_tool::DistanceTool::activate()
-{
-  state_ = SelectionState::START;
-}
+{}
 
 void rviz_distance_tool::DistanceTool::deactivate()
 {}
 
 int rviz_distance_tool::DistanceTool::processMouseEvent(rviz::ViewportMouseEvent& event)
 {
+  int flags = 0;
+
   Ogre::Vector3 pos;
   const bool success = context_->getSelectionManager()->get3DPoint(event.viewport, event.x, event.y, pos);
   setCursor(success ? hit_cursor_ : std_cursor_);
 
-  int flags = 0;
-
   switch (state_)
   {
-  case SelectionState::START:
-//    if (!success) setLinesAndStatus(start_, end_);
-    break;
-  case SelectionState::END:
-    if (success) setLinesAndStatus(start_, pos);
-    break;
-  }
-
-  if (event.leftUp() && success)
-  {
-    switch (state_)
+  case SelectionState::Idle:
+    if (success && event.leftDown()) // Transition from idle if user clicked on something
     {
-    case SelectionState::START:
       start_ = pos;
-      state_ = SelectionState::END;
-      break;
-    case SelectionState::END:
-      end_ = pos;
-      state_ = SelectionState::START;
-      setLinesAndStatus(start_, end_);
-      break;
+      state_ = SelectionState::Tracking;
     }
+    break;
 
+  case SelectionState::Tracking:
+    if (success)
+    {
+      configureLines(start_, pos);
+      configureStatus(start_, pos);
+
+      if (event.leftDown()) // Transition to finished if user clicked on another thing
+      {
+        end_ = pos;
+        state_ = SelectionState::Finished;
+      }
+    }
     flags |= Render;
+    break;
+
+  case SelectionState::Finished: // Stay around in IDLE so you can move the camera and come back for your measurement
+    configureStatus(start_, end_);
+
+    if (event.leftDown()) // User might start a new selection in this state
+    {
+      start_ = pos;
+      state_ = SelectionState::Tracking;
+    }
+    flags |= Render;
+    break;
   }
 
-
+  // Unconditionally, the right click brings you back to idle
   if (event.rightUp())
   {
-    state_ = SelectionState::START;
+    state_ = SelectionState::Idle;
+    start_ = end_ = Ogre::Vector3::ZERO;
     hideLines();
   }
 
   return flags;
 }
 
-void rviz_distance_tool::DistanceTool::setLinesAndStatus(const Ogre::Vector3 &start, const Ogre::Vector3 &end)
+void rviz_distance_tool::DistanceTool::configureLines(const Ogre::Vector3 &start, const Ogre::Vector3 &end)
 {
   const Ogre::Vector3 delta = end - start;
 
@@ -113,8 +121,12 @@ void rviz_distance_tool::DistanceTool::setLinesAndStatus(const Ogre::Vector3 &st
   start_pt = end_pt;
   end_pt = end_pt + Ogre::Vector3(0, 0, delta.z);
   lines_[3]->setPoints(start_pt, end_pt);
+}
 
+void rviz_distance_tool::DistanceTool::configureStatus(const Ogre::Vector3 &start, const Ogre::Vector3 &end)
+{
   // Write the string for the bottom status bar
+  const Ogre::Vector3 delta = end - start;
   std::ostringstream oss;
   oss << "Distance = " << delta.length() << " [x,y,z = " << delta.x << ", " << delta.y << ", " << delta.z << "]";
   setStatus(QString::fromStdString(oss.str()));
