@@ -4,11 +4,11 @@
 #pragma GCC diagnostic push   // Supress warnings from library files
 #pragma GCC diagnostic ignored "-Wunused-but-set-parameter"
 #pragma GCC diagnostic ignored "-Wunused-parameter"
-#include <rviz/viewport_mouse_event.h>
 #include <rviz/display_context.h>
-#include <rviz/selection/selection_manager.h>
-#include <rviz/ogre_helpers/line.h>
 #include <rviz/load_resource.h>
+#include <rviz/ogre_helpers/line.h>
+#include <rviz/selection/selection_manager.h>
+#include <rviz/viewport_mouse_event.h>
 
 #include <OgreSceneNode.h>
 #pragma GCC diagnostic pop // Un-supress warnings
@@ -77,7 +77,7 @@ int rviz_distance_tool::DistanceTool::processMouseEvent(rviz::ViewportMouseEvent
     flags |= Render;
     break;
 
-  case SelectionState::Finished: // Stay around in IDLE so you can move the camera and come back for your measurement
+  case SelectionState::Finished: // Stay here so you can move the camera and come back for your measurement
     configureStatus(start_, end_);
 
     if (event.leftDown()) // User might start a new selection in this state
